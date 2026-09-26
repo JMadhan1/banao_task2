@@ -57,7 +57,7 @@
     "months": 3,
     "queue_size": 120,
     "queue_threshold": 0.15687218137926473,
-    "mean_score": 0.03809201509393044,
-    "expected_frauds": 85.78321799153134
+    "mean_score": 0.03809201509393043,
+    "expected_frauds": 85.78321799153133
   }
 }

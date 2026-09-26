@@ -181,9 +181,12 @@ _add number here_
 
 ## Github Repo Link
 
-https://github.com/JMadhan1/banao_task (the `task2/` folder). The repo must be **private**
-and shared with the invitation address, because ops-policy §10 forbids publishing Kestrel
-data.
+https://github.com/JMadhan1/banao_task2 — a separate repo from Task 1 (kept apart so Task
+1's public repo never touches Kestrel's data). This repo is **private**, per ops-policy §10
+("must not be published, uploaded to public repositories or shared beyond the engagement
+team"), and needs to be shared with the reviewer's invitation address. `data/raw/` is
+excluded from what's committed (the reviewer already has the source pack); everything else
+— code, model, evidence, memo — is in the repo.
 
 ## What does one prediction cost, and what would a month cost at Kestrel's volume (about 750 warranty claims a month)?
 
