@@ -1,0 +1,63 @@
+{
+  "regime_switch_may": {
+    "note": "trained only on pre-May data, scored on May (first month of auto-approval)",
+    "frauds": 14,
+    "caught": 0,
+    "auc": 0.24665981500513873,
+    "pr_auc": 0.01303351851459054,
+    "rs_net": -15200.0,
+    "new_partner_rule_caught": 6
+  },
+  "backtest_june": {
+    "months": [
+      "2026-06"
+    ],
+    "claims": 713,
+    "frauds": 22,
+    "pr_auc": 0.4668648849637857,
+    "auc": 0.8988291014340217,
+    "pr_auc_ci": [
+      0.309,
+      0.641
+    ],
+    "auc_ci": [
+      0.83,
+      0.956
+    ],
+    "flagged": 40,
+    "caught": 16,
+    "precision_at_capacity": 0.4,
+    "recall_at_capacity": 0.7272727272727273,
+    "rs_caught": 22111.0,
+    "rs_goodwill": 9120.0,
+    "rs_net": 12991.0,
+    "fraud_rs_total": 45673.0,
+    "new_partner_rule_caught": 4,
+    "new_partner_rule_rs_net": -5717.0,
+    "random_caught": 4,
+    "accuracy_if_flag_nothing": 0.9691444600280505,
+    "missed_with_no_partner_fraud_history": 5,
+    "missed_total": 6,
+    "caught_with_no_partner_fraud_history": 1
+  },
+  "backtest_pre_may": {
+    "months": [
+      "2026-01",
+      "2026-02",
+      "2026-03",
+      "2026-04"
+    ],
+    "pr_auc": 0.5642731034541636,
+    "auc": 0.8239777373920945,
+    "caught": 19,
+    "frauds": 31
+  },
+  "test": {
+    "rows": 2252,
+    "months": 3,
+    "queue_size": 120,
+    "queue_threshold": 0.15687218137926473,
+    "mean_score": 0.03809201509393044,
+    "expected_frauds": 85.78321799153134
+  }
+}

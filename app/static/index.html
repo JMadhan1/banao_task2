@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kestrel Claim Review</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1d2330; --muted:#667085; --line:#e3e6eb;
+          --high:#b42318; --high-bg:#fef3f2; --med:#b54708; --med-bg:#fffaeb; --low:#067647; --low-bg:#ecfdf3; --accent:#1f4fd1; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  main { max-width:980px; margin:0 auto; padding:20px 16px 40px; }
+  h1 { font-size:20px; margin:0 0 4px; } .sub { color:var(--muted); margin:0 0 18px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:760px){ .grid{ grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:10px 0 3px; }
+  input, select { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:7px; font:inherit; background:#fff; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  button { font:inherit; padding:9px 14px; border-radius:7px; border:1px solid var(--line); background:#fff; cursor:pointer; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); width:100%; margin-top:14px; }
+  .samples { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
+  .verdict { border-radius:9px; padding:14px; margin-bottom:12px; }
+  .verdict.high { background:var(--high-bg); color:var(--high); } .verdict.medium { background:var(--med-bg); color:var(--med); }
+  .verdict.low { background:var(--low-bg); color:var(--low); }
+  .verdict .action { font-weight:700; font-size:17px; } .big { font-size:30px; font-weight:700; }
+  ul.reasons { padding-left:0; list-style:none; margin:0; }
+  ul.reasons li { padding:8px 0; border-bottom:1px solid var(--line); display:flex; gap:8px; }
+  .tag { font-size:12px; padding:1px 7px; border-radius:20px; white-space:nowrap; height:fit-content; }
+  .up { background:var(--high-bg); color:var(--high);} .down { background:var(--low-bg); color:var(--low);} .neutral{background:#eef0f3;color:var(--muted);}
+  .muted { color:var(--muted); font-size:13px; } .err { color:var(--high); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Kestrel Home: warranty claim review</h1>
+  <p class="sub">Should this claim go to the investigation desk (40 checks a month) or be paid?</p>
+  <div class="grid">
+    <form class="card" id="f">
+      <div class="samples">
+        <button type="button" data-s="risky">Example: suspicious</button>
+        <button type="button" data-s="normal">Example: routine</button>
+      </div>
+      <div class="row">
+        <div><label>Partner ID</label><input name="partner_id" required></div>
+        <div><label>SKU</label><select name="sku" id="sku"></select></div>
+      </div>
+      <div class="row">
+        <div><label>Submitted at (IST)</label><input name="submitted_at" required placeholder="2026-09-20 14:30"></div>
+        <div><label>Claim amount (Rs)</label><input name="claim_amount_inr" type="number" step="1" required></div>
+      </div>
+      <div class="row">
+        <div><label>Days since purchase</label><input name="days_since_purchase" type="number" required></div>
+        <div><label>Customer's earlier claims</label><input name="customer_prior_claims" type="number" value="0" required></div>
+      </div>
+      <div class="row">
+        <div><label>Photo attached</label><select name="photo_attached"><option>Y</option><option>N</option></select></div>
+        <div><label>Inspection sign-off</label><select name="partner_inspected"><option>Y</option><option>N</option></select></div>
+      </div>
+      <label>Fault description (not used for scoring)</label><input name="claim_description">
+      <button class="primary" type="submit">Check claim</button>
+    </form>
+    <section class="card" id="out"><p class="muted">Fill in a claim or load an example, then press <b>Check claim</b>.</p></section>
+  </div>
+  <p class="muted">Probability = model's estimate that the investigation desk would find fraud. "Value of checking" =
+  probability × claim amount − (1 − probability) × Rs 380 goodwill (ops-policy §4).</p>
+</main>
+<script>
+const SKUS=["KH-AF-01","KH-AF-02","KH-AF-03","KH-MG-01","KH-MG-02","KH-MG-03","KH-WP-01","KH-WP-02","KH-WP-03","KH-RV-01","KH-RV-02","KH-RV-03","KH-IC-01","KH-IC-02","KH-IC-03","KH-CF-01","KH-CF-02","KH-CF-03","KH-RH-01","KH-RH-02","KH-RH-03"];
+const sel=document.getElementById('sku'); SKUS.forEach(s=>sel.add(new Option(s,s)));
+const SAMPLES={
+  risky:{partner_id:"SP3160",sku:"KH-WP-02",submitted_at:"2026-09-20 14:30",claim_amount_inr:1975,days_since_purchase:180,customer_prior_claims:2,photo_attached:"N",partner_inspected:"N",claim_description:"water leaking"},
+  normal:{partner_id:"SP3265",sku:"KH-MG-02",submitted_at:"2026-09-20 11:05",claim_amount_inr:1240,days_since_purchase:410,customer_prior_claims:0,photo_attached:"Y",partner_inspected:"Y",claim_description:"motor not running"}
+};
+const f=document.getElementById('f'), out=document.getElementById('out');
+document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const s=SAMPLES[b.dataset.s]; for(const k in s) f.elements[k].value=s[k];});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+f.onsubmit=async e=>{
+  e.preventDefault();
+  const d=Object.fromEntries(new FormData(f));
+  ['claim_amount_inr','days_since_purchase','customer_prior_claims'].forEach(k=>d[k]=Number(d[k]));
+  out.innerHTML='<p class="muted">Checking…</p>';
+  try{
+    const r=await fetch('/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+    const j=await r.json();
+    if(!r.ok){ out.innerHTML=`<p class="err"><b>${esc(j.error||'Error')}</b></p>`+(j.details?'<ul>'+j.details.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>':''); return; }
+    out.innerHTML=`<div class="verdict ${j.risk_level}"><div class="action">${esc(j.recommended_action)}</div>
+      <div class="big">${(j.fraud_probability*100).toFixed(1)}%</div><div>chance of fraud · ${j.risk_level} risk ·
+      value of checking Rs ${j.expected_value_of_checking_inr.toLocaleString('en-IN')}</div></div>
+      <b>Why</b><ul class="reasons">${j.reasons.map(x=>`<li><span class="tag ${x.effect==='raises risk'?'up':x.effect==='lowers risk'?'down':'neutral'}">${esc(x.effect)}</span><span>${esc(x.reason)}</span></li>`).join('')}</ul>
+      <p class="muted">Queue cut-off ${(j.context.queue_threshold*100).toFixed(1)}% (≈ the 40 riskiest claims a month). Model data up to ${esc(j.context.model_trained_on_claims_until)}.</p>`;
+  }catch(err){ out.innerHTML='<p class="err">Could not reach the scoring service. Is it running?</p>'; }
+};
+</script>
+</body>
+</html>

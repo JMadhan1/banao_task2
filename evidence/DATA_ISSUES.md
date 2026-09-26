@@ -1,0 +1,18 @@
+# What is wrong with the data, and what I did about it
+
+| # | Issue | How I found it | Size | What I did |
+|---|---|---|---|---|
+| 1 | **Resubmitted claims.** The same `claim_id` appears twice. The rows are identical except `submitted_at`, which is 1–5 days later. | `claim_id` not unique; compared every column within each pair. Tanmay's email confirms partners resubmit bounced claims. | 681 ids, 1,362 rows (both sources). The two labels always agree. | Kept the first submission. Without this, 681 claims would count twice and inflate each partner's claim volume. |
+| 2 | **Undecided cases stored as 0 in legacy Zoho rows.** CRM rows use a blank for "still under investigation", but Zoho couldn't store blanks. | Tanmay's email. From Oct 2025, the CRM shows ~3% of claims blank every month, while legacy months show 0% blank. | ≈ 150 of the 4,828 legacy "0" labels are really "unknown". | Blank CRM labels (215) are never used as labels. Legacy rows are **not used to train** the model, but are still used for partner-history counts. |
+| 3 | **"Accuracy" is the wrong target.** | Fraud rate after dedupe is 1.27%. | Flagging nothing at all scores **98.7% accuracy**. In June it scores 96.9%. | Measured precision within the desk's 40 checks, PR-AUC, and rupees instead. |
+| 4 | **The rules changed on 1 May 2026.** Claims under ₹2,000 are now auto-approved without inspection. | Inspection sign-off dropped from ~93% to ~22% overnight. Claims of ₹1,900–1,999 went from 1.7% to 8.5% of volume. | 2 labelled months (May–June) under the new rules. All 3 test months are under the new rules. | Validated by month, never with a random split. Post-May rows count 8× in training. Calibrated on June. |
+| 5 | **Product serials are unreliable.** | The formats are mixed (`KH…`, `kh…`, `KH-…`, a leading space). Once normalised, 3,745 serials appear on more than one *different* SKU. | All rows. | Not used. A serial that repeats across unrelated products isn't an identity. |
+| 6 | **Timestamps.** Ops-policy §9 says legacy resolution events are in UTC. | This pack has no resolution timestamp. `submitted_at` has the same hour-of-day spread for legacy and CRM rows. | n/a | No correction needed for this pack. I checked and recorded the check rather than assuming. |
+| 7 | **What a label means.** Nearly every claim has a 0/1 label, but the desk checks only 40 a month. | 11,348 decided claims against 40 × 15 = 600 desk checks. | Most 0s must mean "paid, never investigated", not "proven genuine". | Unfixable from here. The labels undercount fraud, especially on claims nobody looked at (auto-approved small claims). The model learns "what the desk has confirmed", so its misses are likely *under*-reported. See the memo's recommendation on audit sampling. |
+| 8 | **Free text is written by the partner.** `claim_description` and `inspector_note` come from the party under suspicion. | Rates by text value are all 0.5–1.8%, no real signal. | 12 fault phrases and 7 note phrases. | Not used as model inputs. |
+| 9 | **Partners onboarded after the training data ends.** | `partners.csv` has 11 partners onboarded Jul–Aug 2026, with claims in test and no history. | 11 partners, 49 test claims. | They score only on claim-level and behavioural features, because there's no fraud history to lean on. This is the model's main blind spot (see EVIDENCE.md). |
+
+## Columns I did not trust
+- `product_serial`: see #5.
+- `is_fraud == 0` on `legacy_zoho` rows: see #2.
+- `partner_inspected` **as a fraud control**: before May, 95 of the 105 frauds carried an inspection sign-off. The sign-off is given by the partner who submits the claim, so it doesn't stop partner fraud.

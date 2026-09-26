@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Kestrel's raw client data pack — never committed, per the brief ("do not publish it").
+# The reviewer already has this pack themselves; only code/model/evidence/memo get shared.
+data/raw/
